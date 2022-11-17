@@ -1,4 +1,3 @@
-const ApplicationError = require('../errors/ApplicationError');
 const { Car } = require('../models');
 const CarController = require('./CarController');
 
@@ -194,5 +193,26 @@ describe("CarController", () => {
       expect(mockResponse.status).toHaveBeenCalledWith(204);
       expect(mockResponse.end).toHaveBeenCalled();
     });
+  });
+
+  describe("#getCarFromRequest", () => {
+    it("should return car", () => {
+      const mockRequest = {
+        params: {
+          id: 1,
+        }
+      };
+
+      const mockCar = 1;
+
+      const mockCarModel = {
+        findByPk: jest.fn().mockReturnValue(mockCar),
+      }
+
+      const carController = new CarController({ carModel: mockCarModel });
+      const car = carController.getCarFromRequest(mockRequest);
+
+      expect(car).toEqual(1);
+    })
   });
 });
