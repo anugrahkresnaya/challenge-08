@@ -2,7 +2,8 @@ const { User, Role } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const AuthenticationController = require('./AuthenticationController');
-const { InsufficientAccessError, EmailNotRegisteredError } = require('../errors');
+const { InsufficientAccessError, EmailNotRegisteredError, WrongPasswordError } = require('../errors');
+const { Promise } = require('sequelize');
 
 describe("AuthenticationController", () => {
   describe("#handleGetUser", () => {
@@ -246,5 +247,69 @@ describe("AuthenticationController", () => {
         expect(mockResponse.json).toHaveBeenCalledWith(err);
       }
     );
+  });
+
+  describe("#handleRegister", () => {
+    it("should call res.status(201) and re.json with access token", async () => {
+      const name = 'user';
+      const email = 'user@gmail.com';
+      const password = 'user123';
+      const encryptedPassword = bcrypt.hashSync('user123', 10);
+
+      const mockRequest = {
+        body: {
+          name,
+          email,
+          password,
+        },
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      };
+
+      const mockNext = jest.fn();
+
+      const mockUser = {
+        id: 1,
+        name: 'user',
+        email: 'user@gmail.com',
+        encryptedPassword: encryptedPassword,
+        roleId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const mockUserModel = {
+        findOne: jest.fn().mockReturnValue(null),
+        create: jest.fn().mockReturnValue(mockUser),
+      };
+
+      const mockRole = {
+        id: 1,
+        name: 'member',
+      }
+
+      const mockRoleModel = {
+        findOne: jest.fn().mockReturnValue(mockRole)
+      }
+
+      const authController = new AuthenticationController({
+        userModel: mockUserModel,
+        roleModel: mockRoleModel,
+        bcrypt,
+        jwt,
+      });
+      await authController.handleRegister(mockRequest, mockResponse, mockNext);
+
+      const token = authController.createTokenFromUser(mockUser, mockRole);
+
+      expect(mockUserModel.findOne).toHaveBeenCalled();
+      expect(mockResponse.status).toHaveBeenCalledWith(201);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        accessToken: token,
+      })
+    });
   });
 });
