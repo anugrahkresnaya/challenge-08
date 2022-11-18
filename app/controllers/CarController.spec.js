@@ -1,34 +1,6 @@
 const dayjs = require('dayjs');
-const { CarAlreadyRentedError } = require('../errors');
 const { Car } = require('../models');
 const CarController = require('./CarController');
-
-const defaultMockRes = {
-  status: jest.fn().mockReturnThis(),
-  json: jest.fn().mockReturnThis(),
-};
-
-const defaultMockCar = {
-  'id': 1,
-  'name': 'Mazda RX4 Wag',
-  'price': 300000,
-  'size': 'LARGE',
-  'image': 'https://source.unsplash.com/501x501',
-  'isCurrentlyRented': false,
-  'createdAt': '2022-11-14T05:11:01.429Z',
-  'updatedAt': '2022-11-14T05:11:01.429Z',
-  'userCar': null,
-};
-
-const defaultMockUserCar = {
-  id: 1,
-  userId: 1,
-  carId: 1,
-  rentStartedAt: null,
-  rentEndedAt: null,
-  createdAt: null,
-  updatedAt: null,
-};
 
 describe("CarController", () => {
   describe("#handleGetCar", () => {
