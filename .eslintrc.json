@@ -19,6 +19,7 @@
         "variables": true,
         "allowNamedExports": false
       }],
-      "no-undef": "off"
+      "no-undef": "off",
+      "no-extra-boolean-cast": "off"
     }
 }
