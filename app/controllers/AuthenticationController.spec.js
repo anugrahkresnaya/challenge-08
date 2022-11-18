@@ -2,8 +2,7 @@ const { User, Role } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const AuthenticationController = require('./AuthenticationController');
-const { InsufficientAccessError, EmailNotRegisteredError, WrongPasswordError } = require('../errors');
-const { Promise } = require('sequelize');
+const { InsufficientAccessError, EmailNotRegisteredError } = require('../errors');
 
 describe("AuthenticationController", () => {
   describe("#handleGetUser", () => {
@@ -310,6 +309,49 @@ describe("AuthenticationController", () => {
       expect(mockResponse.json).toHaveBeenCalledWith({
         accessToken: token,
       })
+    });
+
+    it("should run the next function",async () => {
+      const err = new Error('something');
+      const name = 'user';
+      const email = 'user@gmail.com';
+      const password = 'user123';
+
+      const mockRequest = {
+        body: {
+          name,
+          email,
+          password,
+        },
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      };
+
+      const mockNext = jest.fn();
+
+      const mockUserModel = {
+        findOne: jest.fn().mockRejectedValue(err),
+      };
+
+      const mockRole = {
+        id: 1,
+        name: 'member',
+      }
+
+      const mockRoleModel = {
+        findOne: jest.fn().mockReturnValue(mockRole)
+      }
+
+      const authController = new AuthenticationController({
+        userModel: mockUserModel,
+        roleModel: mockRoleModel,
+      });
+      await authController.handleRegister(mockRequest, mockResponse, mockNext);
+
+      expect(mockNext).toHaveBeenCalled();
     });
   });
 });
